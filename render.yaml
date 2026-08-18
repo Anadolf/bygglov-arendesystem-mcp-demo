@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: bygglov-arendesystem-mcp-demo
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+

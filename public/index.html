@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bygglov 2.0 - Demoarendesystem</title>
+    <script>
+      (() => {
+        const param = new URLSearchParams(window.location.search).get("scoutTheme");
+        const theme =
+          param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --cp-bg: #f7f4ef;
+        --cp-bg-elevated: #fcfbf8;
+        --cp-surface: #ffffff;
+        --cp-surface-soft: #f5f5f5;
+        --cp-border: #dedede;
+        --cp-border-strong: #919191;
+        --cp-text: #242424;
+        --cp-text-muted: #5c5c5c;
+        --cp-text-soft: #6f6f6f;
+        --cp-accent: #b11f4b;
+        --cp-accent-hover: #9a1a41;
+        --cp-accent-soft: rgba(177, 31, 75, 0.08);
+        --cp-accent-fg: #ffffff;
+        --cp-success: #16a34a;
+        --cp-danger: #dc2626;
+        --cp-warning: #f59e0b;
+        --cp-link: #0078d4;
+        --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+        --cp-overlay: rgba(255, 255, 255, 0.8);
+        --cp-panel: rgba(255, 255, 255, 0.86);
+        --cp-panel-strong: rgba(255, 255, 255, 0.96);
+        --cp-sheen: rgba(255, 255, 255, 0.55);
+        --cp-highlight: rgba(177, 31, 75, 0.12);
+      }
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --cp-bg: #3d3b3a;
+        --cp-bg-elevated: #343231;
+        --cp-surface: #292929;
+        --cp-surface-soft: #2e2e2e;
+        --cp-border: #474747;
+        --cp-border-strong: #5f5f5f;
+        --cp-text: #dedede;
+        --cp-text-muted: #919191;
+        --cp-text-soft: #b0b0b0;
+        --cp-accent: #fd8ea1;
+        --cp-accent-hover: #fb7b91;
+        --cp-accent-soft: rgba(253, 142, 161, 0.14);
+        --cp-accent-fg: #1a1a1a;
+        --cp-success: #4ade80;
+        --cp-danger: #f87171;
+        --cp-warning: #fbbf24;
+        --cp-link: #4da6ff;
+        --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+        --cp-overlay: rgba(41, 41, 41, 0.88);
+        --cp-panel: rgba(41, 41, 41, 0.72);
+        --cp-panel-strong: rgba(41, 41, 41, 0.96);
+        --cp-sheen: rgba(255, 255, 255, 0.04);
+        --cp-highlight: rgba(253, 142, 161, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--cp-bg);
+        color: var(--cp-text);
+        font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      header {
+        background: var(--cp-bg-elevated);
+        border-bottom: 1px solid var(--cp-border);
+        padding: 28px 32px;
+      }
+
+      main {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(320px, 440px) 1fr;
+        padding: 24px 32px 40px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      h3 {
+        font-size: 15px;
+      }
+
+      p {
+        color: var(--cp-text-muted);
+        margin: 8px 0 0;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        border-radius: 0.625rem;
+        font: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--cp-border);
+        background: var(--cp-surface);
+        color: var(--cp-text);
+        padding: 10px 12px;
+      }
+
+      textarea {
+        min-height: 84px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        background: var(--cp-accent);
+        color: var(--cp-accent-fg);
+        cursor: pointer;
+        font-weight: 700;
+        padding: 10px 14px;
+      }
+
+      button.secondary {
+        background: var(--cp-surface-soft);
+        border: 1px solid var(--cp-border);
+        color: var(--cp-text);
+      }
+
+      .hero {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .hero code,
+      .mono {
+        font-family: Consolas, "Courier New", Courier, monospace;
+      }
+
+      .panel {
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
+        border-radius: 16px;
+        box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+        padding: 18px;
+      }
+
+      .toolbar {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr 180px;
+        margin: 16px 0;
+      }
+
+      .case-list {
+        display: grid;
+        gap: 10px;
+        max-height: calc(100vh - 260px);
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .case-card {
+        background: var(--cp-surface-soft);
+        border: 1px solid var(--cp-border);
+        border-radius: 0.625rem;
+        cursor: pointer;
+        padding: 12px;
+      }
+
+      .case-card.active {
+        border-color: var(--cp-accent);
+        background: var(--cp-accent-soft);
+      }
+
+      .case-card strong {
+        display: block;
+      }
+
+      .badge {
+        display: inline-block;
+        background: var(--cp-accent-soft);
+        border: 1px solid var(--cp-border);
+        border-radius: 0.625rem;
+        color: var(--cp-text);
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 8px;
+        padding: 4px 8px;
+      }
+
+      .ai-badge {
+        background: var(--cp-accent-soft);
+        border: 1px solid var(--cp-accent);
+        border-radius: 0.625rem;
+        color: var(--cp-text);
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 8px;
+        padding: 4px 8px;
+      }
+
+      .stats {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 18px;
+      }
+
+      .stat {
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .stat span {
+        color: var(--cp-text-muted);
+        display: block;
+        font-size: 12px;
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 24px;
+        margin-top: 4px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .review-layout {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+        margin-top: 16px;
+      }
+
+      .compact-panel {
+        background: var(--cp-surface-soft);
+        border: 1px solid var(--cp-border);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .scroll-panel {
+        max-height: 420px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .field {
+        background: var(--cp-surface-soft);
+        border: 1px solid var(--cp-border);
+        border-radius: 0.625rem;
+        padding: 12px;
+      }
+
+      .field span {
+        color: var(--cp-text-muted);
+        display: block;
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      .documents,
+      .notes,
+      .missing,
+      .checks {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .row {
+        border: 1px solid var(--cp-border);
+        border-radius: 0.625rem;
+        padding: 8px 10px;
+      }
+
+      .row-header {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+      }
+
+      .row select {
+        margin-top: 6px;
+        padding: 7px 10px;
+      }
+
+      .status-dot {
+        border-radius: 999px;
+        display: inline-block;
+        height: 10px;
+        margin-right: 6px;
+        width: 10px;
+      }
+
+      .status-ok {
+        background: var(--cp-success);
+      }
+
+      .status-warning {
+        background: var(--cp-warning);
+      }
+
+      .status-danger {
+        background: var(--cp-danger);
+      }
+
+      .status-neutral {
+        background: var(--cp-border-strong);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      a {
+        color: var(--cp-link);
+      }
+
+      @media (max-width: 920px) {
+        main,
+        .hero,
+        .stats,
+        .grid,
+        .review-layout {
+          grid-template-columns: 1fr;
+        }
+
+        main {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="hero">
+        <div>
+          <h1>Bygglov 2.0 - Demoarendesystem</h1>
+          <p>
+            Ett lokalt tredjepartssystem for att demonstrera hur Copilot Studio kan lasa, sammanfatta
+            och uppdatera bygglovsarenden via MCP.
+          </p>
+        </div>
+        <div>
+          <strong>MCP-endpoint</strong>
+          <p class="mono" id="mcpEndpoint"></p>
+        </div>
+      </div>
+      <section class="stats" id="stats"></section>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Arenden</h2>
+        <div class="toolbar">
+          <input id="query" placeholder="Sok arendenummer, del av nummer, sokande, fastighet..." />
+          <select id="statusFilter">
+            <option value="">Alla statusar</option>
+          </select>
+        </div>
+        <div class="case-list" id="caseList"></div>
+      </section>
+
+      <section class="panel" id="detail">
+        <h2>Valj ett arende</h2>
+        <p>Detaljer, handlingar, kompletteringar och noteringar visas har.</p>
+      </section>
+    </main>
+
+    <script>
+      const statuses = [
+        "Nytt arende",
+        "Vantar pa komplettering",
+        "Under granskning",
+        "Grannhorande/remiss",
+        "Startbesked kravs",
+        "Beviljat med villkor",
+        "Godkand",
+        "Beviljat",
+        "Avslag",
+        "Avskrivet/atertaget",
+        "Slutbesked",
+      ];
+
+      const documentReviewStatuses = ["Ej granskad", "Inkommen", "Godkand", "Saknas", "Behover kompletteras", "Ej relevant"];
+      const complianceStatuses = ["Ej granskad", "Godkand", "Avvikelse", "Behover granskas", "Ej relevant"];
+
+      const state = {
+        cases: [],
+        selected: null,
+      };
+
+      const elements = {
+        caseList: document.querySelector("#caseList"),
+        detail: document.querySelector("#detail"),
+        query: document.querySelector("#query"),
+        statusFilter: document.querySelector("#statusFilter"),
+        stats: document.querySelector("#stats"),
+        mcpEndpoint: document.querySelector("#mcpEndpoint"),
+      };
+
+      elements.mcpEndpoint.textContent = `${location.origin}/mcp`;
+
+      for (const status of statuses) {
+        const option = document.createElement("option");
+        option.value = status;
+        option.textContent = status;
+        elements.statusFilter.append(option);
+      }
+
+      elements.query.addEventListener("input", loadCases);
+      elements.statusFilter.addEventListener("change", loadCases);
+
+      async function loadOverview() {
+        const overview = await fetchJson("/api/overview");
+        const statusEntries = Object.entries(overview.byStatus);
+        elements.stats.innerHTML = "";
+        renderStat("Totalt", overview.totalCases);
+        for (const [status, count] of statusEntries.slice(0, 7)) {
+          renderStat(status, count);
+        }
+      }
+
+      async function loadCases() {
+        const params = new URLSearchParams();
+        if (elements.query.value) params.set("query", elements.query.value);
+        if (elements.statusFilter.value) params.set("status", elements.statusFilter.value);
+
+        state.cases = await fetchJson(`/api/cases?${params}`);
+        renderCaseList();
+
+        if (!state.selected && state.cases.length > 0) {
+          selectCase(state.cases[0].caseNumber);
+        }
+      }
+
+      function renderStat(label, value) {
+        const node = document.createElement("div");
+        node.className = "stat";
+        node.innerHTML = `<span>${escapeHtml(label)}</span><strong>${value}</strong>`;
+        elements.stats.append(node);
+      }
+
+      function renderCaseList() {
+        elements.caseList.innerHTML = "";
+        for (const item of state.cases) {
+          const card = document.createElement("article");
+          card.className = `case-card ${state.selected?.caseNumber === item.caseNumber ? "active" : ""}`;
+          card.innerHTML = `
+            <strong>${escapeHtml(item.caseNumber)}</strong>
+            <span>${escapeHtml(item.applicant)} - ${escapeHtml(item.propertyDesignation)}</span>
+            <span class="badge">${escapeHtml(item.status)}</span>
+          `;
+          card.addEventListener("click", () => selectCase(item.caseNumber));
+          elements.caseList.append(card);
+        }
+      }
+
+      async function selectCase(caseNumber) {
+        state.selected = await fetchJson(`/api/cases/${encodeURIComponent(caseNumber)}`);
+        renderCaseList();
+        renderDetail();
+      }
+
+      async function refreshSelectedCase() {
+        if (!state.selected?.caseNumber) return;
+        try {
+          const latest = await fetchJson(`/api/cases/${encodeURIComponent(state.selected.caseNumber)}`);
+          const previous = JSON.stringify(state.selected);
+          const next = JSON.stringify(latest);
+          state.selected = latest;
+          if (previous !== next) {
+            renderCaseList();
+            renderDetail();
+          }
+        } catch {
+          // Keep the current view if the selected case is temporarily unavailable.
+        }
+      }
+
+      function renderDetail() {
+        const item = state.selected;
+        elements.detail.innerHTML = `
+          <h2>${escapeHtml(item.caseNumber)}</h2>
+          <p>${escapeHtml(item.summary)}</p>
+          <div class="grid">
+            ${field("Status", item.status)}
+            ${field("Sokande", item.applicant)}
+            ${field("E-post", item.applicantEmail)}
+            ${field("Telefon", item.applicantPhone)}
+            ${field("Fastighet", item.propertyDesignation)}
+            ${field("Atgard", item.measure)}
+            ${field("Nasta steg", item.nextStep)}
+            ${field("Kalla", item.source)}
+          </div>
+
+          <section style="margin-top:16px">
+            <h3>Saknade handlingar</h3>
+            <div class="missing">
+              ${(item.missingInformation.length ? item.missingInformation : ["Inga saknade handlingar registrerade."])
+                .map((text) => `<div class="row">${escapeHtml(text)}</div>`)
+                .join("")}
+            </div>
+          </section>
+
+          <div class="review-layout">
+            <section class="compact-panel">
+              <h3>Handlingar</h3>
+              <div class="documents scroll-panel">
+                ${(item.documents.length ? item.documents : item.attachments.map((name) => ({ name, status: "Inkommen", comment: "" })))
+                  .map(
+                    (doc) =>
+                      `<div class="row">
+                        <div class="row-header">
+                          <strong>${statusMarker(doc.reviewStatus || doc.status)}${escapeHtml(doc.name)}</strong>
+                          <span class="badge">${escapeHtml(doc.reviewStatus || doc.status || "Ej granskad")}</span>
+                        </div>
+                        <p>${escapeHtml(doc.comment || "")}</p>
+                        ${doc.reviewedBy ? `<span class="ai-badge">Granskad av ${escapeHtml(doc.reviewedBy)}</span>` : ""}
+                        <select data-document="${escapeHtml(doc.name)}">
+                          ${documentReviewStatuses
+                            .map((status) => `<option value="${escapeHtml(status)}" ${status === (doc.reviewStatus || doc.status) ? "selected" : ""}>${escapeHtml(status)}</option>`)
+                            .join("")}
+                        </select>
+                      </div>`,
+                  )
+                  .join("")}
+              </div>
+            </section>
+
+            <section class="compact-panel">
+              <h3>Regelverk och handläggningskontroller</h3>
+              <div class="checks scroll-panel">
+                ${(item.complianceChecks || [])
+                  .map(
+                    (check) =>
+                      `<div class="row">
+                        <div class="row-header">
+                          <strong>${statusMarker(check.status)}${escapeHtml(check.title)}</strong>
+                          <span class="badge">${escapeHtml(check.status)}</span>
+                        </div>
+                        <p><strong>${escapeHtml(check.area)}</strong> - ${escapeHtml(check.source)}</p>
+                        <p>${escapeHtml(check.comment || "")}</p>
+                        ${check.reviewedBy ? `<span class="ai-badge">Granskad av ${escapeHtml(check.reviewedBy)}</span>` : ""}
+                        <select data-check="${escapeHtml(check.id)}">
+                          ${complianceStatuses
+                            .map((status) => `<option value="${escapeHtml(status)}" ${status === check.status ? "selected" : ""}>${escapeHtml(status)}</option>`)
+                            .join("")}
+                        </select>
+                      </div>`,
+                  )
+                  .join("")}
+              </div>
+            </section>
+          </div>
+
+          <section style="margin-top:16px">
+            <h3>Uppdatera status</h3>
+            <div class="actions">
+              <select id="newStatus">${statuses
+                .map((status) => `<option value="${escapeHtml(status)}" ${status === item.status ? "selected" : ""}>${escapeHtml(status)}</option>`)
+                .join("")}</select>
+              <button id="saveStatus">Spara</button>
+            </div>
+          </section>
+
+          <section style="margin-top:16px">
+            <h3>Ny notering</h3>
+            <textarea id="noteText" placeholder="Skriv intern handlaggningsnotering..."></textarea>
+            <div class="actions">
+              <button id="saveNote">Lagg till notering</button>
+              <button class="secondary" id="copyPrompt">Kopiera MCP-demo prompt</button>
+            </div>
+          </section>
+
+          <section style="margin-top:16px">
+            <h3>Noteringar</h3>
+            <div class="notes">
+              ${item.notes
+                .map(
+                  (note) =>
+                    `<div class="row"><strong>${escapeHtml(note.author)}</strong><p>${escapeHtml(note.text)}</p><small>${escapeHtml(note.createdAt)}</small></div>`,
+                )
+                .join("")}
+            </div>
+          </section>
+        `;
+
+        document.querySelector("#saveStatus").addEventListener("click", saveStatus);
+        document.querySelector("#saveNote").addEventListener("click", saveNote);
+        document.querySelector("#copyPrompt").addEventListener("click", copyPrompt);
+        document.querySelectorAll("[data-document]").forEach((select) => {
+          select.addEventListener("change", () => saveDocumentReview(select.dataset.document, select.value));
+        });
+        document.querySelectorAll("[data-check]").forEach((select) => {
+          select.addEventListener("change", () => saveComplianceCheck(select.dataset.check, select.value));
+        });
+      }
+
+      function field(label, value) {
+        return `<div class="field"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || "-")}</strong></div>`;
+      }
+
+      function statusMarker(status) {
+        const className =
+          status === "Godkand"
+            ? "status-ok"
+            : status === "Saknas" || status === "Avvikelse" || status === "Behover kompletteras"
+              ? "status-danger"
+              : status === "Behover granskas" || status === "Ej granskad"
+                ? "status-warning"
+                : "status-neutral";
+
+        return `<span class="status-dot ${className}"></span>`;
+      }
+
+      async function saveStatus() {
+        const status = document.querySelector("#newStatus").value;
+        await fetchJson(`/api/cases/${encodeURIComponent(state.selected.caseNumber)}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, note: `Status andrad via demo-UI till ${status}.` }),
+        });
+        await loadOverview();
+        await loadCases();
+        await selectCase(state.selected.caseNumber);
+      }
+
+      async function saveNote() {
+        const text = document.querySelector("#noteText").value.trim();
+        if (!text) return;
+        await fetchJson(`/api/cases/${encodeURIComponent(state.selected.caseNumber)}/notes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, author: "Andreas Adolfsson via Bygglov 2.0" }),
+        });
+        await loadCases();
+        await selectCase(state.selected.caseNumber);
+      }
+
+      async function saveDocumentReview(documentName, reviewStatus) {
+        await fetchJson(
+          `/api/cases/${encodeURIComponent(state.selected.caseNumber)}/documents/${encodeURIComponent(documentName)}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reviewStatus }),
+          },
+        );
+        await loadCases();
+        await selectCase(state.selected.caseNumber);
+      }
+
+      async function saveComplianceCheck(checkId, status) {
+        await fetchJson(`/api/cases/${encodeURIComponent(state.selected.caseNumber)}/compliance/${encodeURIComponent(checkId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+        await loadCases();
+        await selectCase(state.selected.caseNumber);
+      }
+
+      async function copyPrompt() {
+        const prompt = `Anvand MCP-verktyget bygglov_get_case for ${state.selected.caseNumber}, sammanfatta status, saknade handlingar och foresla nasta steg pa svenska.`;
+        await navigator.clipboard.writeText(prompt);
+      }
+
+      async function fetchJson(url, options) {
+        const response = await fetch(url, options);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Ett fel uppstod.");
+        return payload;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      loadOverview();
+      loadCases();
+      setInterval(async () => {
+        await loadOverview();
+        await loadCases();
+        await refreshSelectedCase();
+      }, 5000);
+    </script>
+  </body>
+</html>
