@@ -14,24 +14,11 @@ import {
   updateDocumentReview,
 } from "./data.js";
 import { createMcpServer } from "./mcp.js";
-import {
-  addWelfareCaseNote,
-  getWelfareCase,
-  getWelfareCases,
-  getWelfareDomains,
-  getWelfareOverview,
-  getWelfareStatuses,
-  getWelfareSystems,
-  loadWelfareStore,
-  runWelfareAgent,
-  updateWelfareCaseStatus,
-} from "./welfareData.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3978);
 
 loadStore();
-loadWelfareStore();
 
 app.use(
   cors({
@@ -114,65 +101,6 @@ app.patch("/api/cases/:caseNumber/compliance/:checkId", (req, res, next) => {
 app.post("/api/cases/:caseNumber/notes", (req, res, next) => {
   try {
     res.status(201).json(addCaseNote(req.params.caseNumber, req.body.text, req.body.author || "Andreas Adolfsson via Bygglov 2.0"));
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.get("/api/welfare/overview", (_req, res) => {
-  res.json(getWelfareOverview());
-});
-
-app.get("/api/welfare/systems", (_req, res) => {
-  res.json(getWelfareSystems());
-});
-
-app.get("/api/welfare/meta", (_req, res) => {
-  res.json({
-    statuses: getWelfareStatuses(),
-    domains: getWelfareDomains(),
-  });
-});
-
-app.get("/api/welfare/cases", (req, res) => {
-  res.json(
-    getWelfareCases({
-      domain: req.query.domain,
-      status: req.query.status,
-      query: req.query.query,
-      minimumRisk: req.query.minimumRisk,
-    }),
-  );
-});
-
-app.get("/api/welfare/cases/:caseNumber", (req, res) => {
-  const found = getWelfareCase(req.params.caseNumber);
-  if (!found) {
-    res.status(404).json({ error: `Hittar inte välfärdsärende ${req.params.caseNumber}.` });
-    return;
-  }
-  res.json(found);
-});
-
-app.post("/api/welfare/cases/:caseNumber/analyze", (req, res, next) => {
-  try {
-    res.json(runWelfareAgent(req.params.caseNumber));
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.patch("/api/welfare/cases/:caseNumber/status", (req, res, next) => {
-  try {
-    res.json(updateWelfareCaseStatus(req.params.caseNumber, req.body.status, req.body.note));
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post("/api/welfare/cases/:caseNumber/notes", (req, res, next) => {
-  try {
-    res.status(201).json(addWelfareCaseNote(req.params.caseNumber, req.body.text, req.body.author || "Demo-handläggare"));
   } catch (error) {
     next(error);
   }

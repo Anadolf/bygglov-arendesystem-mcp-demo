@@ -1,11 +1,6 @@
 # Bygglov 2.0 - demoarendesystem med MCP
 
-Det här är ett lokalt demoärendesystem för att visa hur en Copilot Studio-agent kan arbeta mot tredjepartssystem via MCP.
-
-Webbgränssnittet har två klickbara demoflikar:
-
-- **Bygglov 2.0** - bygglovsärenden med handlingar, regelverkskontroller och statusuppdatering.
-- **Välfärdsbrott** - dumidata för kommunala riskärenden, underliggande system och en simulerad AI-agent som föreslår kontrollåtgärder.
+Det här är ett lokalt demoärendesystem för att visa hur en Copilot Studio-agent kan arbeta mot ett tredjepartssystem via MCP.
 
 ## Starta
 
@@ -34,8 +29,6 @@ SharePoint-källan som demon motsvarar:
 
 Om du vill seeda om från källmapparna: stoppa servern, ta bort `data\cases.json` och starta igen.
 
-Välfärdsbrottsfliken seedas första gången till `data\welfare.json`. Ta bort den filen om du vill återställa välfärdsbrotts-demon till ursprunglig dumidata.
-
 ## MCP-verktyg
 
 Servern exponerar dessa verktyg:
@@ -48,13 +41,6 @@ Servern exponerar dessa verktyg:
 - `bygglov_update_status`
 - `bygglov_add_note`
 - `bygglov_create_case`
-- `valfardsbrott_demo_overview`
-- `valfardsbrott_list_systems`
-- `valfardsbrott_list_cases`
-- `valfardsbrott_get_case`
-- `valfardsbrott_run_agent_analysis`
-- `valfardsbrott_update_status`
-- `valfardsbrott_add_note`
 
 ## Koppla till Copilot Studio
 
@@ -77,6 +63,3 @@ Använd sedan tunnelns publika HTTPS-adress med `/mcp`, exempelvis:
 - "Sammanfatta BYGG-2026-20260616-19001 och föreslå nästa steg."
 - "Lägg en intern notering på BYGG-2026-20260616-19001."
 - "Ändra status till Grannhörande/remiss."
-- "Visa högriskärenden inom välfärdsbrott."
-- "Kör agentanalys på VFB-2026-1001."
-- "Vilka underliggande system används i välfärdsbrotts-demon?"

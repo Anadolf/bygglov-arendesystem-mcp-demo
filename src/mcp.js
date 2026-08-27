@@ -14,15 +14,6 @@ import {
   updateCaseStatus,
   updateDocumentReview,
 } from "./data.js";
-import {
-  addWelfareCaseNote,
-  getWelfareCase,
-  getWelfareCases,
-  getWelfareOverview,
-  getWelfareSystems,
-  runWelfareAgent,
-  updateWelfareCaseStatus,
-} from "./welfareData.js";
 
 const statusValues = [
   "Nytt arende",
@@ -40,7 +31,6 @@ const statusValues = [
 
 const documentReviewStatuses = ["Ej granskad", "Inkommen", "Godkand", "Saknas", "Behover kompletteras", "Ej relevant"];
 const complianceStatuses = ["Ej granskad", "Godkand", "Avvikelse", "Behover granskas", "Ej relevant"];
-const welfareStatuses = ["Ny risk", "AI-granskad", "Under utredning", "Kontroll klar", "Avskriven", "Polisanmälan"];
 
 export function createMcpServer() {
   const server = new McpServer({
@@ -281,100 +271,6 @@ export function createMcpServer() {
       },
     },
     async (input) => withErrorHandling(() => createCase(input)),
-  );
-
-  server.registerTool(
-    "valfardsbrott_demo_overview",
-    {
-      title: "Välfärdsbrott demoöversikt",
-      description: "Beskriver välfärdsbrotts-demon, underliggande system, risklägen och exempel på agentfrågor.",
-    },
-    async () => jsonResult(getWelfareOverview()),
-  );
-
-  server.registerTool(
-    "valfardsbrott_list_systems",
-    {
-      title: "Lista underliggande välfärdssystem",
-      description: "Visar demodata från socialtjänst, ekonomi, folkbokföring, leverantörskontroll, tidloggar och kontrolljournal.",
-    },
-    async () => jsonResult(getWelfareSystems()),
-  );
-
-  server.registerTool(
-    "valfardsbrott_list_cases",
-    {
-      title: "Lista välfärdsbrottsärenden",
-      description: "Hämtar riskärenden. Filtrera på domän, status, fritext eller minsta riskpoäng.",
-      inputSchema: {
-        domain: z.string().optional(),
-        status: z.string().optional(),
-        query: z.string().optional(),
-        minimumRisk: z.number().int().min(0).max(100).optional(),
-        limit: z.number().int().min(1).max(100).default(20),
-      },
-    },
-    async ({ domain, status, query, minimumRisk, limit }) =>
-      jsonResult(getWelfareCases({ domain, status, query, minimumRisk }).slice(0, limit)),
-  );
-
-  server.registerTool(
-    "valfardsbrott_get_case",
-    {
-      title: "Hämta välfärdsbrottsärende",
-      description: "Hämtar komplett riskärende med indikatorer, systemfynd, rekommenderade åtgärder och noteringar.",
-      inputSchema: {
-        caseNumber: z.string().describe("Ärendenummer, exempelvis VFB-2026-1001."),
-      },
-    },
-    async ({ caseNumber }) =>
-      withErrorHandling(() => {
-        const found = getWelfareCase(caseNumber);
-        if (!found) {
-          throw new Error(`Hittar inte välfärdsärende ${caseNumber}.`);
-        }
-        return found;
-      }),
-  );
-
-  server.registerTool(
-    "valfardsbrott_run_agent_analysis",
-    {
-      title: "Kör välfärdsbrottsagent",
-      description: "Simulerar agentens riskanalys, prioriterar kontrollåtgärder och uppdaterar ärendet med en intern notering.",
-      inputSchema: {
-        caseNumber: z.string(),
-      },
-    },
-    async ({ caseNumber }) => withErrorHandling(() => runWelfareAgent(caseNumber)),
-  );
-
-  server.registerTool(
-    "valfardsbrott_update_status",
-    {
-      title: "Uppdatera välfärdsärendestatus",
-      description: "Ändrar status på ett välfärdsbrottsärende och kan lägga till en intern notering.",
-      inputSchema: {
-        caseNumber: z.string(),
-        status: z.enum(welfareStatuses),
-        note: z.string().optional(),
-      },
-    },
-    async ({ caseNumber, status, note }) => withErrorHandling(() => updateWelfareCaseStatus(caseNumber, status, note)),
-  );
-
-  server.registerTool(
-    "valfardsbrott_add_note",
-    {
-      title: "Lägg till välfärdsnotering",
-      description: "Lägger till en intern notering på ett välfärdsbrottsärende.",
-      inputSchema: {
-        caseNumber: z.string(),
-        text: z.string().min(1),
-        author: z.string().default("Demo-handläggare"),
-      },
-    },
-    async ({ caseNumber, text, author }) => withErrorHandling(() => addWelfareCaseNote(caseNumber, text, author)),
   );
 
   return server;
