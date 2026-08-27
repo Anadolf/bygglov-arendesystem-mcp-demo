@@ -1,0 +1,462 @@
+{
+  "cases": [
+    {
+      "caseNumber": "VFB-2026-1001",
+      "domain": "Ekonomiskt bistånd",
+      "subject": "Återkommande bistånd trots registrerad arbetsinkomst",
+      "counterparty": "Demo Person A",
+      "status": "AI-granskad",
+      "riskScore": 92,
+      "amountAtRisk": 148500,
+      "summary": "Ansökan om ekonomiskt bistånd matchar flera månader med preliminär arbetsinkomst och ändrad hushållsbild.",
+      "indicators": [
+        {
+          "label": "Inkomstmatchning",
+          "weight": 38,
+          "description": "Registrerad arbetsinkomst över tröskelvärde under två ansökningsperioder."
+        },
+        {
+          "label": "Hushållsändring",
+          "weight": 29,
+          "description": "Folkbokföringsuppgift tyder på ändrad hushållsbild som inte finns i ansökan."
+        },
+        {
+          "label": "Återkommande kompletteringar",
+          "weight": 18,
+          "description": "Samma kompletteringsbrist förekommer i flera månader."
+        }
+      ],
+      "evidenceSystems": [
+        "social",
+        "payments",
+        "population",
+        "controls"
+      ],
+      "systemFindings": {
+        "social": "Tre ansökningar saknar uppdaterad hushållsförsäkran.",
+        "payments": "Utbetalningar har fortsatt trots inkomstrapport i två perioder.",
+        "population": "Ny vuxen person på adressen sammanfaller med ansökningsperiod.",
+        "controls": "Liknande mönster gav återkrav i tidigare kontrollinsats."
+      },
+      "recommendedActions": [
+        "Begär inkomstspecifikation och kontoutdrag för aktuell period.",
+        "Verifiera hushållsbild innan ny utbetalning.",
+        "Pausa automatisk utbetalning tills handläggare har granskat underlag."
+      ],
+      "timeline": [
+        "2026-08-05: Ansökan registrerad.",
+        "2026-08-06: Utbetalning preliminärt planerad.",
+        "2026-08-07: Agenten flaggade inkomst- och adressavvikelse."
+      ],
+      "agentAnalysis": {
+        "riskLevel": "Hög risk",
+        "confidence": 0.91,
+        "summary": "Ekonomiskt bistånd: Inkomstmatchning, Hushållsändring, Återkommande kompletteringar.",
+        "reasoning": [
+          "Registrerad arbetsinkomst över tröskelvärde under två ansökningsperioder.",
+          "Folkbokföringsuppgift tyder på ändrad hushållsbild som inte finns i ansökan.",
+          "Samma kompletteringsbrist förekommer i flera månader."
+        ],
+        "recommendedActions": [
+          "Begär inkomstspecifikation och kontoutdrag för aktuell period.",
+          "Verifiera hushållsbild innan ny utbetalning.",
+          "Pausa automatisk utbetalning tills handläggare har granskat underlag."
+        ],
+        "evidenceMap": [
+          {
+            "system": "Socialtjänstens verksamhetssystem",
+            "finding": "Tre ansökningar saknar uppdaterad hushållsförsäkran."
+          },
+          {
+            "system": "Ekonomisystem och utbetalningar",
+            "finding": "Utbetalningar har fortsatt trots inkomstrapport i två perioder."
+          },
+          {
+            "system": "Folkbokförings- och adresskontroll",
+            "finding": "Ny vuxen person på adressen sammanfaller med ansökningsperiod."
+          },
+          {
+            "system": "Kontroll- och utredningsjournal",
+            "finding": "Liknande mönster gav återkrav i tidigare kontrollinsats."
+          }
+        ],
+        "decisionBoundary": "Agenten prioriterar kontroll och föreslår åtgärder. Slutlig bedömning och myndighetsbeslut görs av handläggare.",
+        "generatedAt": "2026-08-27T05:57:18.175Z"
+      },
+      "notes": [
+        {
+          "id": "welfare-note-1787810238175-8fe1f3fba56658",
+          "author": "Välfärdsagenten",
+          "text": "AI-agenten körde riskanalys: Hög risk. Ekonomiskt bistånd: Inkomstmatchning, Hushållsändring, Återkommande kompletteringar.",
+          "createdAt": "2026-08-27T05:57:18.175Z"
+        },
+        {
+          "id": "welfare-note-1787810199880-e9bb1d0f296f08",
+          "author": "System",
+          "text": "Ärendet skapat från nattlig riskkörning med dumidata.",
+          "createdAt": "2026-08-27T05:56:39.881Z"
+        }
+      ],
+      "assignedTo": "Kontrollteam IFO",
+      "createdAt": "2026-08-07T08:14:00+02:00",
+      "updatedAt": "2026-08-27T05:57:18.175Z"
+    },
+    {
+      "caseNumber": "VFB-2026-1002",
+      "domain": "Hemtjänst",
+      "subject": "Fakturerad tid överstiger beviljad och utförd tid",
+      "counterparty": "Omsorgspartner Demo AB",
+      "status": "AI-granskad",
+      "riskScore": 88,
+      "amountAtRisk": 236000,
+      "summary": "Utförare fakturerar återkommande mer tid än beviljat bistånd och loggad närvaro hos brukare.",
+      "indicators": [
+        {
+          "label": "Faktureringsavvikelse",
+          "weight": 34,
+          "description": "Fakturerad tid överstiger beviljad tid i flera ärenden."
+        },
+        {
+          "label": "Saknade utförarloggar",
+          "weight": 31,
+          "description": "Besök saknar komplett tid- och platsverifiering."
+        },
+        {
+          "label": "Bolagskoppling",
+          "weight": 14,
+          "description": "Koppling till närstående utförare bör granskas."
+        }
+      ],
+      "evidenceSystems": [
+        "time",
+        "payments",
+        "suppliers",
+        "controls"
+      ],
+      "systemFindings": {
+        "time": "Geostämplar saknas för 21 procent av rapporterade besök.",
+        "payments": "Fakturor ligger 14-19 procent över jämförbara utförare.",
+        "suppliers": "Samma företrädare har två aktiva utförarbolag i kommunen.",
+        "controls": "Tidigare kontrollnotering om bristande signeringsrutiner."
+      },
+      "recommendedActions": [
+        "Jämför beviljad, utförd och fakturerad tid per brukare.",
+        "Begär stickprov på signeringsunderlag.",
+        "Skicka ärendet till avtalscontroller för leverantörsdialog."
+      ],
+      "timeline": [
+        "2026-08-03: Faktura importerad.",
+        "2026-08-04: Tidloggar matchade.",
+        "2026-08-04: Agentanalys skapad."
+      ],
+      "agentAnalysis": null,
+      "notes": [
+        {
+          "id": "welfare-note-1787810199881-5ce3972e8a754",
+          "author": "Välfärdsagenten",
+          "text": "Agenten rekommenderar stickprov innan eventuell återbetalningsprocess.",
+          "createdAt": "2026-08-27T05:56:39.881Z"
+        }
+      ],
+      "assignedTo": "Avtalscontroller vård och omsorg",
+      "createdAt": "2026-08-04T06:30:00+02:00",
+      "updatedAt": "2026-08-04T06:30:00+02:00"
+    },
+    {
+      "caseNumber": "VFB-2026-1003",
+      "domain": "Föreningsbidrag",
+      "subject": "Samma aktivitetsunderlag används i flera ansökningar",
+      "counterparty": "Demo IF Ungdom",
+      "status": "Under utredning",
+      "riskScore": 76,
+      "amountAtRisk": 84500,
+      "summary": "Aktivitetslistor och medlemsantal avviker mot tidigare år och liknar underlag från annan förening.",
+      "indicators": [
+        {
+          "label": "Dubblettmönster",
+          "weight": 28,
+          "description": "Aktivitetsrader matchar annan ansökan med små textvariationer."
+        },
+        {
+          "label": "Medlemsavvikelse",
+          "weight": 23,
+          "description": "Medlemsantalet ökar kraftigt utan motsvarande historik."
+        },
+        {
+          "label": "Överlappande period",
+          "weight": 12,
+          "description": "Ansökan överlappar tidigare utbetalad period."
+        }
+      ],
+      "evidenceSystems": [
+        "payments",
+        "population",
+        "controls"
+      ],
+      "systemFindings": {
+        "payments": "Två bidragsutbetalningar avser överlappande aktivitetsperiod.",
+        "population": "Flera deltagare saknar kommunanknytning i urvalet.",
+        "controls": "Tidigare begäran om komplettering av närvarolistor."
+      },
+      "recommendedActions": [
+        "Begär originalunderlag för aktiviteter och medlemsregister.",
+        "Kontrollera dubbelfinansiering mot kultur- och fritidsnämndens regler.",
+        "Dokumentera bedömning i kontrolljournalen."
+      ],
+      "timeline": [
+        "2026-07-28: Ansökan inkommen.",
+        "2026-07-30: Dubblettkontroll körd.",
+        "2026-08-01: Handläggare tog över."
+      ],
+      "agentAnalysis": null,
+      "notes": [
+        {
+          "id": "welfare-note-1787810199881-4626c9e6fc32f8",
+          "author": "Handläggare",
+          "text": "Underlag begärt från föreningen i demoärendet.",
+          "createdAt": "2026-08-27T05:56:39.881Z"
+        }
+      ],
+      "assignedTo": "Kultur- och fritidsförvaltningen",
+      "createdAt": "2026-08-01T10:00:00+02:00",
+      "updatedAt": "2026-08-15T15:30:00+02:00"
+    },
+    {
+      "caseNumber": "VFB-2026-1004",
+      "domain": "Leverantör/upphandling",
+      "subject": "Onormalt pris och möjlig koppling mellan anbudsgivare",
+      "counterparty": "Stadstjänst Demo AB",
+      "status": "Ny risk",
+      "riskScore": 83,
+      "amountAtRisk": 412000,
+      "summary": "Anbudsmönster, adresskoppling och återkommande direktupphandlingar ger förhöjd risk för otillbörlig påverkan.",
+      "indicators": [
+        {
+          "label": "Närståendekoppling",
+          "weight": 30,
+          "description": "Bolagsföreträdare har historiska kopplingar mellan anbudsgivare."
+        },
+        {
+          "label": "Tröskelvärdesmönster",
+          "weight": 27,
+          "description": "Fakturor och beställningar återkommer strax under intern kontrollgräns."
+        },
+        {
+          "label": "Prisavvikelse",
+          "weight": 16,
+          "description": "Vinnande pris avviker från marknadsjämförelse och tidigare ramavtal."
+        }
+      ],
+      "evidenceSystems": [
+        "suppliers",
+        "payments",
+        "controls"
+      ],
+      "systemFindings": {
+        "suppliers": "Två anbudsgivare delar historisk adress och tidigare styrelsesuppleant.",
+        "payments": "Flera direktupphandlingar ligger strax under beloppsgräns.",
+        "controls": "Intern kontroll har markerat behov av jävsgenomgång."
+      },
+      "recommendedActions": [
+        "Starta fördjupad leverantörskontroll.",
+        "Kontrollera jäv och attestkedja.",
+        "Samla fakturor och beställningar för stickprov."
+      ],
+      "timeline": [
+        "2026-08-10: Upphandlingsdata importerad.",
+        "2026-08-11: Bolagskoppling hittad."
+      ],
+      "agentAnalysis": null,
+      "notes": [
+        {
+          "id": "welfare-note-1787810199881-dd1a078fbea868",
+          "author": "System",
+          "text": "Riskflagga gäller endast demo och ska inte tolkas som faktisk misstanke.",
+          "createdAt": "2026-08-27T05:56:39.881Z"
+        }
+      ],
+      "assignedTo": "Upphandling och intern kontroll",
+      "createdAt": "2026-08-11T09:45:00+02:00",
+      "updatedAt": "2026-08-11T09:45:00+02:00"
+    },
+    {
+      "caseNumber": "VFB-2026-1005",
+      "domain": "Personlig assistans",
+      "subject": "Dubbelrapportering av assistanstimmar",
+      "counterparty": "Assistans Demo Ekonomisk förening",
+      "status": "Kontroll klar",
+      "riskScore": 69,
+      "amountAtRisk": 97500,
+      "summary": "Rapporterade pass överlappar för två assistenter och samma brukare under flera helger.",
+      "indicators": [
+        {
+          "label": "Överlappande pass",
+          "weight": 24,
+          "description": "Två assistenter är rapporterade samtidigt där bara en insats var beslutad."
+        },
+        {
+          "label": "Helgmönster",
+          "weight": 16,
+          "description": "Avvikelsen återkommer främst under helger."
+        }
+      ],
+      "evidenceSystems": [
+        "time",
+        "payments",
+        "suppliers",
+        "controls"
+      ],
+      "systemFindings": {
+        "time": "Överlappande pass hittades i schemaimport.",
+        "payments": "Kreditfaktura skapad i demo efter kontroll.",
+        "suppliers": "Leverantören saknar andra riskmarkeringar.",
+        "controls": "Kontroll avslutad med rutinförbättring."
+      },
+      "recommendedActions": [
+        "Följ upp att korrigerad faktura är bokförd.",
+        "Lägg regel för automatisk dubbelpasskontroll i kommande körningar."
+      ],
+      "timeline": [
+        "2026-07-12: Avvikelse flaggad.",
+        "2026-07-15: Leverantör kontaktad.",
+        "2026-07-25: Kontroll klar."
+      ],
+      "agentAnalysis": null,
+      "notes": [
+        {
+          "id": "welfare-note-1787810199881-af297e682bfb5",
+          "author": "Välfärdsagenten",
+          "text": "Demo visar hur förebyggande kontroll kan leda till korrigerad faktura.",
+          "createdAt": "2026-08-27T05:56:39.881Z"
+        }
+      ],
+      "assignedTo": "Omsorgsförvaltningen",
+      "createdAt": "2026-07-12T11:20:00+02:00",
+      "updatedAt": "2026-07-25T13:10:00+02:00"
+    }
+  ],
+  "systems": [
+    {
+      "id": "social",
+      "name": "Socialtjänstens verksamhetssystem",
+      "owner": "IFO",
+      "description": "Ansökningar, biståndsbeslut, hushållsbild och handläggningsnoteringar.",
+      "dataQuality": "Hög"
+    },
+    {
+      "id": "payments",
+      "name": "Ekonomisystem och utbetalningar",
+      "owner": "Ekonomi",
+      "description": "Utbetalningar, fakturor, attestkedjor och bankgiro/plusgiro.",
+      "dataQuality": "Hög"
+    },
+    {
+      "id": "population",
+      "name": "Folkbokförings- och adresskontroll",
+      "owner": "Kontaktcenter",
+      "description": "Adress, hushåll, flyttdatum och relationer från tillåtna kontrollkällor.",
+      "dataQuality": "Medel"
+    },
+    {
+      "id": "suppliers",
+      "name": "Leverantörs- och bolagskontroll",
+      "owner": "Upphandling",
+      "description": "Företrädare, ägarrelationer, F-skatt, bankkonto och tidigare avvikelser.",
+      "dataQuality": "Medel"
+    },
+    {
+      "id": "time",
+      "name": "Tidrapportering och utförarloggar",
+      "owner": "Vård och omsorg",
+      "description": "Utförd tid, scheman, geostämplar, brukarkoppling och fakturerad tid.",
+      "dataQuality": "Medel"
+    },
+    {
+      "id": "controls",
+      "name": "Kontroll- och utredningsjournal",
+      "owner": "Intern kontroll",
+      "description": "Riskpoäng, kontrollresultat, återkrav, polisanmälan och beslut om rutinförändring.",
+      "dataQuality": "Hög"
+    }
+  ],
+  "payments": [
+    {
+      "id": "PAY-9101",
+      "domain": "Ekonomiskt bistånd",
+      "recipient": "Demo Person A",
+      "amount": 18500,
+      "period": "2026-08",
+      "status": "Pausad för kontroll"
+    },
+    {
+      "id": "PAY-9102",
+      "domain": "Hemtjänst",
+      "recipient": "Omsorgspartner Demo AB",
+      "amount": 236000,
+      "period": "2026-07",
+      "status": "Stickprov krävs"
+    },
+    {
+      "id": "PAY-9103",
+      "domain": "Föreningsbidrag",
+      "recipient": "Demo IF Ungdom",
+      "amount": 84500,
+      "period": "2026 H2",
+      "status": "Komplettering begärd"
+    },
+    {
+      "id": "PAY-9104",
+      "domain": "Upphandling",
+      "recipient": "Stadstjänst Demo AB",
+      "amount": 412000,
+      "period": "2026 Q3",
+      "status": "Attestgranskning"
+    }
+  ],
+  "suppliers": [
+    {
+      "id": "ORG-501",
+      "name": "Omsorgspartner Demo AB",
+      "risk": "Hög",
+      "finding": "Avvikande fakturerad tid och saknade loggar."
+    },
+    {
+      "id": "ORG-502",
+      "name": "Stadstjänst Demo AB",
+      "risk": "Hög",
+      "finding": "Historisk adresskoppling till annan anbudsgivare."
+    },
+    {
+      "id": "ORG-503",
+      "name": "Assistans Demo Ekonomisk förening",
+      "risk": "Medel",
+      "finding": "Dubbelpass hittat men korrigerad faktura finns."
+    }
+  ],
+  "controls": [
+    {
+      "id": "CTRL-01",
+      "name": "Inkomstmatchning före utbetalning",
+      "coverage": "Ekonomiskt bistånd",
+      "status": "Aktiv"
+    },
+    {
+      "id": "CTRL-02",
+      "name": "Beviljad/utförd/fakturerad tid",
+      "coverage": "Hemtjänst och assistans",
+      "status": "Aktiv"
+    },
+    {
+      "id": "CTRL-03",
+      "name": "Dubblettkontroll av bidragsunderlag",
+      "coverage": "Föreningsbidrag",
+      "status": "Pilot"
+    },
+    {
+      "id": "CTRL-04",
+      "name": "Leverantörskoppling och tröskelvärden",
+      "coverage": "Upphandling",
+      "status": "Pilot"
+    }
+  ]
+}

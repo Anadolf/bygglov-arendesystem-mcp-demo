@@ -350,6 +350,87 @@
         margin-top: 12px;
       }
 
+      .app-tabs {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      .tab-button {
+        background: var(--cp-surface-soft);
+        border: 1px solid var(--cp-border);
+        color: var(--cp-text);
+      }
+
+      .tab-button.active {
+        background: var(--cp-accent);
+        color: var(--cp-accent-fg);
+      }
+
+      .app-view.hidden {
+        display: none;
+      }
+
+      .welfare-main {
+        grid-template-columns: minmax(320px, 430px) 1fr;
+      }
+
+      .system-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .system-card,
+      .risk-card {
+        background: var(--cp-surface-soft);
+        border: 1px solid var(--cp-border);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .risk-score {
+        align-items: center;
+        background: var(--cp-accent-soft);
+        border: 1px solid var(--cp-accent);
+        border-radius: 999px;
+        display: inline-flex;
+        font-weight: 800;
+        height: 42px;
+        justify-content: center;
+        min-width: 42px;
+        padding: 0 10px;
+      }
+
+      .risk-card {
+        cursor: pointer;
+      }
+
+      .risk-card.active {
+        border-color: var(--cp-accent);
+        background: var(--cp-accent-soft);
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .agent-output {
+        background: var(--cp-bg-elevated);
+        border: 1px solid var(--cp-border);
+        border-radius: 16px;
+        margin-top: 16px;
+        padding: 14px;
+      }
+
+      .two-column {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       a {
         color: var(--cp-link);
       }
@@ -359,7 +440,9 @@
         .hero,
         .stats,
         .grid,
-        .review-layout {
+        .review-layout,
+        .system-grid,
+        .two-column {
           grid-template-columns: 1fr;
         }
 
@@ -384,10 +467,14 @@
           <p class="mono" id="mcpEndpoint"></p>
         </div>
       </div>
+      <nav class="app-tabs" aria-label="Välj demosystem">
+        <button class="tab-button active" data-app-tab="bygglov">Bygglov 2.0</button>
+        <button class="tab-button" data-app-tab="welfare">Välfärdsbrott</button>
+      </nav>
       <section class="stats" id="stats"></section>
     </header>
 
-    <main>
+    <main class="app-view" id="bygglovApp">
       <section class="panel">
         <h2>Arenden</h2>
         <div class="toolbar">
@@ -402,6 +489,25 @@
       <section class="panel" id="detail">
         <h2>Valj ett arende</h2>
         <p>Detaljer, handlingar, kompletteringar och noteringar visas har.</p>
+      </section>
+    </main>
+
+    <main class="app-view welfare-main hidden" id="welfareApp">
+      <section class="panel">
+        <h2>Riskärenden</h2>
+        <p>Simulerad agentkö för kommunala kontroller mot välfärdsbrott.</p>
+        <div class="toolbar">
+          <input id="welfareQuery" placeholder="Sök ärende, område, motpart..." />
+          <select id="welfareDomainFilter">
+            <option value="">Alla områden</option>
+          </select>
+        </div>
+        <div class="case-list" id="welfareCaseList"></div>
+      </section>
+
+      <section class="panel" id="welfareDetail">
+        <h2>Välj ett riskärende</h2>
+        <p>Agentens indikatorer, systemfynd och föreslagna kontroller visas här.</p>
       </section>
     </main>
 
@@ -424,17 +530,33 @@
       const complianceStatuses = ["Ej granskad", "Godkand", "Avvikelse", "Behover granskas", "Ej relevant"];
 
       const state = {
+        activeApp: "bygglov",
         cases: [],
         selected: null,
+        welfare: {
+          cases: [],
+          selected: null,
+          overview: null,
+          systems: [],
+          statuses: [],
+          domains: [],
+        },
       };
 
       const elements = {
+        tabButtons: document.querySelectorAll("[data-app-tab]"),
+        bygglovApp: document.querySelector("#bygglovApp"),
+        welfareApp: document.querySelector("#welfareApp"),
         caseList: document.querySelector("#caseList"),
         detail: document.querySelector("#detail"),
         query: document.querySelector("#query"),
         statusFilter: document.querySelector("#statusFilter"),
         stats: document.querySelector("#stats"),
         mcpEndpoint: document.querySelector("#mcpEndpoint"),
+        welfareCaseList: document.querySelector("#welfareCaseList"),
+        welfareDetail: document.querySelector("#welfareDetail"),
+        welfareQuery: document.querySelector("#welfareQuery"),
+        welfareDomainFilter: document.querySelector("#welfareDomainFilter"),
       };
 
       elements.mcpEndpoint.textContent = `${location.origin}/mcp`;
@@ -448,14 +570,37 @@
 
       elements.query.addEventListener("input", loadCases);
       elements.statusFilter.addEventListener("change", loadCases);
+      elements.welfareQuery.addEventListener("input", loadWelfareCases);
+      elements.welfareDomainFilter.addEventListener("change", loadWelfareCases);
+      elements.tabButtons.forEach((button) => {
+        button.addEventListener("click", () => switchApp(button.dataset.appTab));
+      });
 
       async function loadOverview() {
+        if (state.activeApp === "welfare") {
+          await loadWelfareOverview();
+          return;
+        }
+
         const overview = await fetchJson("/api/overview");
         const statusEntries = Object.entries(overview.byStatus);
         elements.stats.innerHTML = "";
         renderStat("Totalt", overview.totalCases);
         for (const [status, count] of statusEntries.slice(0, 7)) {
           renderStat(status, count);
+        }
+      }
+
+      function switchApp(appName) {
+        state.activeApp = appName;
+        elements.tabButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.appTab === appName);
+        });
+        elements.bygglovApp.classList.toggle("hidden", appName !== "bygglov");
+        elements.welfareApp.classList.toggle("hidden", appName !== "welfare");
+        loadOverview();
+        if (appName === "welfare" && state.welfare.cases.length === 0) {
+          loadWelfareDemo();
         }
       }
 
@@ -704,6 +849,250 @@
         await navigator.clipboard.writeText(prompt);
       }
 
+      async function loadWelfareDemo() {
+        const [meta, systems] = await Promise.all([fetchJson("/api/welfare/meta"), fetchJson("/api/welfare/systems")]);
+        state.welfare.statuses = meta.statuses;
+        state.welfare.domains = meta.domains;
+        state.welfare.systems = systems;
+        elements.welfareDomainFilter.innerHTML = '<option value="">Alla områden</option>';
+        for (const domain of meta.domains) {
+          const option = document.createElement("option");
+          option.value = domain;
+          option.textContent = domain;
+          elements.welfareDomainFilter.append(option);
+        }
+        await loadWelfareOverview();
+        await loadWelfareCases();
+      }
+
+      async function loadWelfareOverview() {
+        const overview = await fetchJson("/api/welfare/overview");
+        state.welfare.overview = overview;
+        elements.stats.innerHTML = "";
+        renderStat("Riskärenden", overview.totalCases);
+        renderStat("Öppna", overview.openCases);
+        renderStat("Högrisk", overview.highRiskCases);
+        renderStat("Belopp i kontroll", formatCurrency(overview.preventedAmount));
+      }
+
+      async function loadWelfareCases() {
+        const params = new URLSearchParams();
+        if (elements.welfareQuery.value) params.set("query", elements.welfareQuery.value);
+        if (elements.welfareDomainFilter.value) params.set("domain", elements.welfareDomainFilter.value);
+
+        state.welfare.cases = await fetchJson(`/api/welfare/cases?${params}`);
+        renderWelfareCaseList();
+
+        if (!state.welfare.selected && state.welfare.cases.length > 0) {
+          selectWelfareCase(state.welfare.cases[0].caseNumber);
+        }
+      }
+
+      function renderWelfareCaseList() {
+        elements.welfareCaseList.innerHTML = "";
+        for (const item of state.welfare.cases) {
+          const card = document.createElement("article");
+          card.className = `risk-card ${state.welfare.selected?.caseNumber === item.caseNumber ? "active" : ""}`;
+          card.innerHTML = `
+            <div class="row-header">
+              <strong>${escapeHtml(item.caseNumber)}</strong>
+              <span class="risk-score">${item.riskScore}</span>
+            </div>
+            <p>${escapeHtml(item.subject)}</p>
+            <span class="badge">${escapeHtml(item.domain)}</span>
+            <span class="badge">${escapeHtml(item.status)}</span>
+          `;
+          card.addEventListener("click", () => selectWelfareCase(item.caseNumber));
+          elements.welfareCaseList.append(card);
+        }
+      }
+
+      async function selectWelfareCase(caseNumber) {
+        state.welfare.selected = await fetchJson(`/api/welfare/cases/${encodeURIComponent(caseNumber)}`);
+        renderWelfareCaseList();
+        renderWelfareDetail();
+      }
+
+      function renderWelfareDetail() {
+        const item = state.welfare.selected;
+        if (!item) return;
+
+        elements.welfareDetail.innerHTML = `
+          <div class="row-header">
+            <div>
+              <h2>${escapeHtml(item.caseNumber)}</h2>
+              <p>${escapeHtml(item.summary)}</p>
+            </div>
+            <span class="risk-score">${item.riskScore}</span>
+          </div>
+
+          <div class="grid">
+            ${field("Område", item.domain)}
+            ${field("Motpart", item.counterparty)}
+            ${field("Status", item.status)}
+            ${field("Belopp i risk/kontroll", formatCurrency(item.amountAtRisk))}
+            ${field("Ansvarig funktion", item.assignedTo)}
+            ${field("Agentroll", "Beslutsstöd - inte automatiskt myndighetsbeslut")}
+          </div>
+
+          <section style="margin-top:16px">
+            <h3>Agentens riskindikatorer</h3>
+            <div class="stack">
+              ${item.indicators
+                .map(
+                  (indicator) => `<div class="row">
+                    <div class="row-header">
+                      <strong>${escapeHtml(indicator.label)}</strong>
+                      <span class="badge">Vikt ${indicator.weight}</span>
+                    </div>
+                    <p>${escapeHtml(indicator.description)}</p>
+                  </div>`,
+                )
+                .join("")}
+            </div>
+          </section>
+
+          <section style="margin-top:16px">
+            <h3>Underliggande system</h3>
+            <div class="system-grid">
+              ${state.welfare.systems
+                .filter((system) => item.evidenceSystems.includes(system.id))
+                .map(
+                  (system) => `<article class="system-card">
+                    <strong>${escapeHtml(system.name)}</strong>
+                    <p>${escapeHtml(item.systemFindings[system.id] || system.description)}</p>
+                    <span class="badge">${escapeHtml(system.owner)}</span>
+                  </article>`,
+                )
+                .join("")}
+            </div>
+          </section>
+
+          <div class="two-column" style="margin-top:16px">
+            <section class="compact-panel">
+              <h3>Föreslagna kontrollåtgärder</h3>
+              <div class="stack">
+                ${item.recommendedActions.map((action) => `<div class="row">${escapeHtml(action)}</div>`).join("")}
+              </div>
+            </section>
+            <section class="compact-panel">
+              <h3>Tidslinje</h3>
+              <div class="stack">
+                ${item.timeline.map((entry) => `<div class="row">${escapeHtml(entry)}</div>`).join("")}
+              </div>
+            </section>
+          </div>
+
+          ${renderAgentOutput(item)}
+
+          <section style="margin-top:16px">
+            <h3>Demoåtgärder</h3>
+            <div class="actions">
+              <button id="runWelfareAgent">Kör agentanalys</button>
+              <select id="welfareNewStatus">
+                ${state.welfare.statuses
+                  .map((status) => `<option value="${escapeHtml(status)}" ${status === item.status ? "selected" : ""}>${escapeHtml(status)}</option>`)
+                  .join("")}
+              </select>
+              <button class="secondary" id="saveWelfareStatus">Spara status</button>
+            </div>
+          </section>
+
+          <section style="margin-top:16px">
+            <h3>Ny kontrollnotering</h3>
+            <textarea id="welfareNoteText" placeholder="Skriv intern kontrollnotering..."></textarea>
+            <div class="actions">
+              <button id="saveWelfareNote">Lägg till notering</button>
+              <button class="secondary" id="copyWelfarePrompt">Kopiera agentprompt</button>
+            </div>
+          </section>
+
+          <section style="margin-top:16px">
+            <h3>Kontrolljournal</h3>
+            <div class="notes">
+              ${item.notes
+                .map(
+                  (note) =>
+                    `<div class="row"><strong>${escapeHtml(note.author)}</strong><p>${escapeHtml(note.text)}</p><small>${escapeHtml(note.createdAt)}</small></div>`,
+                )
+                .join("")}
+            </div>
+          </section>
+        `;
+
+        document.querySelector("#runWelfareAgent").addEventListener("click", runSelectedWelfareAgent);
+        document.querySelector("#saveWelfareStatus").addEventListener("click", saveWelfareStatus);
+        document.querySelector("#saveWelfareNote").addEventListener("click", saveWelfareNote);
+        document.querySelector("#copyWelfarePrompt").addEventListener("click", copyWelfarePrompt);
+      }
+
+      function renderAgentOutput(item) {
+        if (!item.agentAnalysis) {
+          return `<section class="agent-output">
+            <h3>Agentanalys</h3>
+            <p>Klicka på "Kör agentanalys" för att simulera hur agenten läser indikatorer, väger systemfynd och föreslår kontroller.</p>
+          </section>`;
+        }
+
+        return `<section class="agent-output">
+          <h3>Agentanalys: ${escapeHtml(item.agentAnalysis.riskLevel)}</h3>
+          <p>${escapeHtml(item.agentAnalysis.summary)}</p>
+          <div class="grid">
+            ${field("Konfidens", `${Math.round(item.agentAnalysis.confidence * 100)} %`)}
+            ${field("Skapad", item.agentAnalysis.generatedAt)}
+          </div>
+          <div class="stack" style="margin-top:12px">
+            ${item.agentAnalysis.evidenceMap
+              .map((evidence) => `<div class="row"><strong>${escapeHtml(evidence.system)}</strong><p>${escapeHtml(evidence.finding)}</p></div>`)
+              .join("")}
+          </div>
+          <p><strong>Rättssäkerhetsgräns:</strong> ${escapeHtml(item.agentAnalysis.decisionBoundary)}</p>
+        </section>`;
+      }
+
+      async function runSelectedWelfareAgent() {
+        await fetchJson(`/api/welfare/cases/${encodeURIComponent(state.welfare.selected.caseNumber)}/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        await loadWelfareOverview();
+        await loadWelfareCases();
+        await selectWelfareCase(state.welfare.selected.caseNumber);
+      }
+
+      async function saveWelfareStatus() {
+        const status = document.querySelector("#welfareNewStatus").value;
+        await fetchJson(`/api/welfare/cases/${encodeURIComponent(state.welfare.selected.caseNumber)}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, note: `Status ändrad via demo-UI till ${status}.` }),
+        });
+        await loadWelfareOverview();
+        await loadWelfareCases();
+        await selectWelfareCase(state.welfare.selected.caseNumber);
+      }
+
+      async function saveWelfareNote() {
+        const text = document.querySelector("#welfareNoteText").value.trim();
+        if (!text) return;
+        await fetchJson(`/api/welfare/cases/${encodeURIComponent(state.welfare.selected.caseNumber)}/notes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, author: "Demo-handläggare" }),
+        });
+        await loadWelfareCases();
+        await selectWelfareCase(state.welfare.selected.caseNumber);
+      }
+
+      async function copyWelfarePrompt() {
+        const prompt = `Använd MCP-verktyget valfardsbrott_run_agent_analysis för ${state.welfare.selected.caseNumber}. Sammanfatta riskindikatorer, underliggande systemfynd och föreslagna kontrollåtgärder på svenska.`;
+        await navigator.clipboard.writeText(prompt);
+      }
+
+      function formatCurrency(value) {
+        return new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(value);
+      }
+
       async function fetchJson(url, options) {
         const response = await fetch(url, options);
         const payload = await response.json();
@@ -723,9 +1112,14 @@
       loadOverview();
       loadCases();
       setInterval(async () => {
-        await loadOverview();
-        await loadCases();
-        await refreshSelectedCase();
+        if (state.activeApp === "welfare") {
+          await loadWelfareOverview();
+          await loadWelfareCases();
+        } else {
+          await loadOverview();
+          await loadCases();
+          await refreshSelectedCase();
+        }
       }, 5000);
     </script>
   </body>
